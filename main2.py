@@ -260,7 +260,7 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
             """
 
             overpass_response = requests.get(
-                "https://overpass-api.de/api/interpreter",
+                "https://overpass.kumi.systems/api/interpreter",
                 params={
                     "data": overpass_sorgu
                 },
