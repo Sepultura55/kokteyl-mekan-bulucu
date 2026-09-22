@@ -259,7 +259,7 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
             out center tags;
             """
 
-                        overpass_sunuculari = [
+             overpass_sunuculari = [
                 "https://overpass-api.de/api/interpreter",
                 "https://overpass.kumi.systems/api/interpreter",
                 "https://overpass.nchc.org.tw/api/interpreter"
@@ -291,7 +291,6 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                     "⚠️ Mekan sunucuları şu an yoğun. Biraz sonra tekrar deneyebilirsin."
                 )
                 overpass_veri = {"elements": []}
-            overpass_veri = overpass_response.json()
 
             for yer in overpass_veri.get("elements", []):
 
