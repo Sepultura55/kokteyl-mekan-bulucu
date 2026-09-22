@@ -259,19 +259,38 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
             out center tags;
             """
 
-            overpass_response = requests.get(
+                        overpass_sunuculari = [
+                "https://overpass-api.de/api/interpreter",
                 "https://overpass.kumi.systems/api/interpreter",
-                params={
-                    "data": overpass_sorgu
-                },
-                headers={
-                    "User-Agent": "KokteylMekanBulucu/1.0",
-                    "Accept": "application/json"
-                },
-                timeout=30
-            )
+                "https://overpass.nchc.org.tw/api/interpreter"
+            ]
 
-            overpass_response.raise_for_status()
+            overpass_veri = None
+
+            for sunucu in overpass_sunuculari:
+                try:
+                    overpass_response = requests.get(
+                        sunucu,
+                        params={"data": overpass_sorgu},
+                        headers={
+                            "User-Agent": "KokteylMekanBulucu/1.0",
+                            "Accept": "application/json"
+                        },
+                        timeout=20
+                    )
+
+                    overpass_response.raise_for_status()
+                    overpass_veri = overpass_response.json()
+                    break
+
+                except requests.RequestException:
+                    continue
+
+            if overpass_veri is None:
+                st.warning(
+                    "⚠️ Mekan sunucuları şu an yoğun. Biraz sonra tekrar deneyebilirsin."
+                )
+                overpass_veri = {"elements": []}
             overpass_veri = overpass_response.json()
 
             for yer in overpass_veri.get("elements", []):
