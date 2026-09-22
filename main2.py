@@ -42,6 +42,7 @@ sehirler = [
     "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye",
     "Düzce"
 ]
+
 sehir_koordinatlari = {
     "Adana": (37.0000, 35.3213),
     "Adıyaman": (37.7648, 38.2786),
@@ -162,13 +163,12 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
 
     else:
 
-        # -------------------------
-        # COCKTAIL DB
-        # -------------------------
-
         st.info("🍹 Kokteyller aranıyor...")
 
         try:
+            # -------------------------
+            # COCKTAIL DB
+            # -------------------------
 
             response = requests.get(
                 "https://www.thecocktaildb.com/api/json/v1/1/filter.php",
@@ -177,17 +177,13 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
             )
 
             response.raise_for_status()
-
             veri = response.json()
-
             kokteyller = veri.get("drinks")
 
             if not isinstance(kokteyller, list):
-
                 st.error(
                     f"❌ '{malzeme}' ile kokteyl bulunamadı."
                 )
-
                 st.stop()
 
             kokteyl_isimleri = [
@@ -202,12 +198,13 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                 kokteyl_isimleri
             )
 
-
             # -------------------------
             # GEMINI
             # -------------------------
 
-            st.info("🤖 Yapay zeka, istediğin ortama göre kokteyl seçiyor...")
+            st.info(
+                "🤖 Yapay zeka, istediğin ortama göre kokteyl seçiyor..."
+            )
 
             prompt = f"""
             Kullanıcının istediği malzeme: {malzeme}
@@ -243,23 +240,25 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                 )
 
             # -------------------------
-            # OPENSTREETMAP MEKAN ARAMA
+            # OPENSTREETMAP
             # -------------------------
 
-            st.info(f"📍 {sehir} içindeki mekanlar aranıyor...")
+            st.info(
+                f"📍 {sehir} içindeki mekanlar aranıyor..."
+            )
+
             mekanlar = []
 
             lat, lon = sehir_koordinatlari[sehir]
 
             overpass_sorgu = f"""
-            [out:json][timeout:25];
-
+            [out:json][timeout:15];
             nwr["amenity"~"^(bar|pub|nightclub)$"](around:10000,{lat},{lon});
-
             out center tags;
             """
 
-             overpass_sunuculari = [
+            # Bir sunucu çalışmazsa diğerini dene
+            overpass_sunuculari = [
                 "https://overpass-api.de/api/interpreter",
                 "https://overpass.kumi.systems/api/interpreter",
                 "https://overpass.nchc.org.tw/api/interpreter"
@@ -271,7 +270,9 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                 try:
                     overpass_response = requests.get(
                         sunucu,
-                        params={"data": overpass_sorgu},
+                        params={
+                            "data": overpass_sorgu
+                        },
                         headers={
                             "User-Agent": "KokteylMekanBulucu/1.0",
                             "Accept": "application/json"
@@ -290,7 +291,13 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                 st.warning(
                     "⚠️ Mekan sunucuları şu an yoğun. Biraz sonra tekrar deneyebilirsin."
                 )
-                overpass_veri = {"elements": []}
+                overpass_veri = {
+                    "elements": []
+                }
+
+            # -------------------------
+            # MEKAN VERİLERİ
+            # -------------------------
 
             for yer in overpass_veri.get("elements", []):
 
@@ -320,8 +327,6 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                     puan += 90
                 elif tur == "nightclub":
                     puan += 85
-                elif tur == "biergarten":
-                    puan += 80
 
                 if tags.get("bar") == "yes":
                     puan += 70
@@ -335,9 +340,15 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                 isim_kucuk = isim.lower()
 
                 anahtar_kelimeler = [
-                    "bar", "pub", "lounge", "club",
-                    "cocktail", "roof", "teras",
-                    "gastropub", "bistro"
+                    "bar",
+                    "pub",
+                    "lounge",
+                    "club",
+                    "cocktail",
+                    "roof",
+                    "teras",
+                    "gastropub",
+                    "bistro"
                 ]
 
                 for kelime in anahtar_kelimeler:
@@ -366,6 +377,10 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                 key=lambda x: x["puan"],
                 reverse=True
             )[:10]
+
+            # -------------------------
+            # SONUÇLAR
+            # -------------------------
 
             if mekanlar:
 
@@ -408,19 +423,14 @@ if st.button("🔍 Kokteyl ve Mekan Bul"):
                     f"⚠️ {sehir} için uygun mekan bulunamadı."
                 )
 
-
-
-
-
         except requests.RequestException as hata:
-
-            st.error("❌ İnternet/API bağlantı hatası:")
-
+            st.error(
+                "❌ İnternet/API bağlantı hatası:"
+            )
             st.write(hata)
 
-
         except Exception as hata:
-
-            st.error("❌ Bir hata oluştu:")
-
+            st.error(
+                "❌ Bir hata oluştu:"
+            )
             st.exception(hata)
